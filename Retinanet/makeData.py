@@ -11,7 +11,8 @@ if __name__ == '__main__':
 	normal_csv['filename'] = datapath + "正常/" + normal_csv['filename']
 	abnormal_csv['filename'] = datapath + abnormal_csv['classes'] + "/" + abnormal_csv['filename']
 
-	train_txt = normal_csv.append(abnormal_csv)
+	# train_txt = normal_csv.append(abnormal_csv)
+	train_txt = abnormal_csv
 	train_txt.loc[ train_txt['classes'] != "正常", "classes" ] = "abnormal"
 	train_txt.loc[ train_txt['classes'] == "正常", "classes" ] = "normal"
 
@@ -32,6 +33,6 @@ if __name__ == '__main__':
 
 	f = open("classes.csv", "w+")
 	# class_name,id
-	f.write("{},{}\n".format("normal",0))
-	f.write("{},{}\n".format("abnormal",1))
+	f.write("{},{}\n".format("abnormal",0))
+	# f.write("{},{}\n".format("normal",1))
 	f.close()

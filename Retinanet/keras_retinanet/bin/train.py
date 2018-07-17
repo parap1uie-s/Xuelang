@@ -177,7 +177,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
             verbose=1,
             save_best_only=True,
             monitor="mAP",
-            mode='auto'
+            mode='max'
         )
         checkpoint = RedirectModel(checkpoint, model)
         callbacks.append(checkpoint)
@@ -185,12 +185,12 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
     callbacks.append(keras.callbacks.ReduceLROnPlateau(
         monitor  = 'mAP',
         factor   = 0.1,
-        patience = 2,
+        patience = 5,
         verbose  = 1,
-        mode     = 'auto',
+        mode     = 'max',
         min_delta  = 0.0001,
         cooldown = 0,
-        min_lr   = 0
+        min_lr   = 1e-7
     ))
 
     return callbacks
@@ -213,14 +213,14 @@ def create_generators(args, preprocess_image):
     # create random transform generator for augmenting training data
     if args.random_transform:
         transform_generator = random_transform_generator(
-            min_rotation=-0.2,
-            max_rotation=0.2,
-            min_translation=(-0.2, -0.2),
-            max_translation=(0.2, 0.2),
-            min_shear=-0.3,
-            max_shear=0.3,
-            min_scaling=(0.8, 0.8),
-            max_scaling=(1.2, 1.2),
+            min_rotation=-0.5,
+            max_rotation=0.5,
+            min_translation=(-0.3, -0.3),
+            max_translation=(0.3, 0.3),
+            min_shear=-0.4,
+            max_shear=0.4,
+            min_scaling=(0.7, 0.7),
+            max_scaling=(1.3, 1.3),
             flip_x_chance=0.5,
             flip_y_chance=0.5,
         )
