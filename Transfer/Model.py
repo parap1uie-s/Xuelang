@@ -90,13 +90,13 @@ def XceptionTransfer(input_shape, channel=3, final_activation='softmax'):
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         sobel_tensor = Gray2SobelEdgeLayer()(gray_tensor) # 224,224,1
-        sobel_tensor = KL.Conv2D(64,(14,14), padding="same", name="sobelCONV")(sobel_tensor)
+        # sobel_tensor = KL.Conv2D(64,(14,14), padding="same", name="sobelCONV")(sobel_tensor)
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, sobel_tensor]) # 224,224,4+64
-        x = ChannelVoteBlock(x)
+        # x = ChannelVoteBlock(x)
         baseModel = Xception(include_top=False, weights=None, input_tensor=x, pooling="avg")
 
     x = baseModel.output
-    x = KL.Dense(512, activation='relu')(x)
+    x = KL.Dense(1024, activation='relu')(x)
     x = KL.Dropout(0.3)(x)
     x = KL.Dense(2, activation=final_activation, name='output')(x)
     model = Model(input_tensor, outputs=x)

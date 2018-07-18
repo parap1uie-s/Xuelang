@@ -1,4 +1,5 @@
 import tensorflow as tf
+import keras
 
 def categorical_crossentropy_with_smooth(target, output):
     return tf.losses.softmax_cross_entropy(onehot_labels=target, logits=output, label_smoothing=0.1)
@@ -19,34 +20,23 @@ def focal(alpha=0.25, gamma=2.0):
         As defined in https://arxiv.org/abs/1708.02002
 
         Args
-            y_true: Tensor of target data from the generator with shape (B, N, num_classes).
-            y_pred: Tensor of predicted data from the network with shape (B, N, num_classes).
+            y_true: Tensor of target data from the generator with shape (B, num_classes).
+            y_pred: Tensor of predicted data from the network with shape (B, num_classes).
 
         Returns
             The focal loss of y_pred w.r.t. y_true.
         """
-        labels         = y_true[:, :, :-1]
-        anchor_state   = y_true[:, :, -1]  # -1 for ignore, 0 for background, 1 for object
+        labels         = y_true
         classification = y_pred
-
-        # filter out "ignore" anchors
-        indices        = backend.where(keras.backend.not_equal(anchor_state, -1))
-        labels         = backend.gather_nd(labels, indices)
-        classification = backend.gather_nd(classification, indices)
 
         # compute the focal loss
         alpha_factor = keras.backend.ones_like(labels) * alpha
-        alpha_factor = backend.where(keras.backend.equal(labels, 1), alpha_factor, 1 - alpha_factor)
-        focal_weight = backend.where(keras.backend.equal(labels, 1), 1 - classification, classification)
+        alpha_factor = tf.where(keras.backend.equal(labels, 1), alpha_factor, 1 - alpha_factor)
+        focal_weight = tf.where(keras.backend.equal(labels, 1), 1 - classification, classification)
         focal_weight = alpha_factor * focal_weight ** gamma
 
         cls_loss = focal_weight * keras.backend.binary_crossentropy(labels, classification)
 
-        # compute the normalizer: the number of positive anchors
-        normalizer = backend.where(keras.backend.equal(anchor_state, 1))
-        normalizer = keras.backend.cast(keras.backend.shape(normalizer)[0], keras.backend.floatx())
-        normalizer = keras.backend.maximum(1.0, normalizer)
-
-        return keras.backend.sum(cls_loss) / normalizer
+        return keras.backend.sum(cls_loss)
 
     return _focal

@@ -46,14 +46,14 @@ if __name__ == '__main__':
     elif args.modelType == "nas":
         model = NASTransfer((height,width,3), channel=args.channel, final_activation=activation)
 
-    optimizer = SGD(lr=0.001, clipnorm=5.0, momentum=0.9, decay=1e-5)
+    optimizer = Adam(lr=0.001, clipnorm=5.0)
 
     if args.loss == "cc":
         model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=['acc'])
     elif args.loss == "ccs":
         model.compile(optimizer=optimizer, loss=categorical_crossentropy_with_smooth, metrics=['acc'])
     elif args.loss == "focal":
-        model.compile(optimizer=optimizer, loss=focal, metrics=['acc'])
+        model.compile(optimizer=optimizer, loss=focal(), metrics=['acc'])
 
     if os.path.exists("Transfer-{}.h5".format(args.modelType)):
         model.load_weights("Transfer-{}.h5".format(args.modelType), by_name=True, skip_mismatch=True)
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     train_datagen = ImageDataGenerator(
         shear_range=0.2,
         zoom_range=0.3,
-        rotation_range=40,
+        rotation_range=90,
         channel_shift_range=20,
         width_shift_range=0.2,
         height_shift_range=0.2,
@@ -87,9 +87,9 @@ if __name__ == '__main__':
             shuffle = True)
 
     callbacks = [AUCEvaluation(validation_generator=validation_generator),
-    EarlyStopping(monitor='val_loss', min_delta=0.001, patience=10, verbose=0, mode='auto'),
-    ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, verbose=1, mode='auto', min_delta=0.01, min_lr=0),
-    ModelCheckpoint("Transfer-{}.h5".format(args.modelType), monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=True, mode='auto', period=1)]
+    EarlyStopping(monitor='auc', min_delta=0.001, patience=10, verbose=0, mode='max'),
+    ReduceLROnPlateau(monitor='auc', factor=0.1, patience=3, verbose=1, mode='max', min_delta=0.01, min_lr=1e-9),
+    ModelCheckpoint("Transfer-{}.h5".format(args.modelType), monitor='auc', verbose=1, save_best_only=True, save_weights_only=True, mode='max', period=1)]
 
     model.fit_generator(
         train_generator,
