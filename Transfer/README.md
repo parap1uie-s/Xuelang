@@ -34,12 +34,14 @@ mkdir dataset/train/normal
 mkdir dataset/train/abnormal
 mkdir dataset/val/normal
 mkdir dataset/val/abnormal
+mkdir dataset/test/0/
 ```
 
 以下自行修改/your/abspath/to/train/为你的实际放置数据的路径
 ```
 ln -s /your/abspath/to/train/正常/* /your/abspath/to/project/Transfer/dataset/train/normal/
 ln -s /your/abspath/to/train/*/* /your/abspath/to/project/Transfer/dataset/train/abnormal/
+ln -s /your/abspath/to/test/* /your/abspath/to/project/Transfer/dataset/test/0/
 ```
 
 切换至train/abnormal/路径下，删除在normal中出现过的文件名（留下的是其余47个异常类别的文件）
@@ -57,6 +59,38 @@ python3
 from Utils import *
 datapath = 'dataset/'
 moveImg(datapath)
+```
+
+处理完成后整个目录结构如下：
+```
+dataset/
+├── test
+│   └── 0
+│       ├── J01_2018.06.13\ 13_22_11.jpg -> /home/professorsfx/Xuelang/test/J01_2018.06.13\ 13_22_11.jpg
+│       ├── ………………………………
+│       └── J01_2018.06.28\ 15_52_02.jpg -> /home/professorsfx/Xuelang/test/J01_2018.06.28\ 15_52_02.jpg
+├── train
+│   ├── abnormal
+│   │   ├── J01_2018.06.13\ 13_17_04.jpg -> /home/professorsfx/Xuelang/train/\346\223\246\346\264\236/J01_2018.06.13\ 13_17_04.jpg
+│       ├── ………………………………
+│   │   └── J01_2018.06.28\ 15_48_53.jpg -> /home/professorsfx/Xuelang/train/\346\223\246\346\264\236/J01_2018.06.28\ 15_48_53.jpg
+│   └── normal
+│       ├── J01_2018.06.13\ 13_23_08.jpg -> /home/professorsfx/Xuelang/train/\346\255\243\345\270\270/J01_2018.06.13\ 13_23_08.jpg
+│       ├── ………………………………
+│       └── J01_2018.06.28\ 15_50_57.jpg -> /home/professorsfx/Xuelang/train/\346\255\243\345\270\270/J01_2018.06.28\ 15_50_57.jpg
+├── train_split.txt
+├── val
+│   ├── abnormal
+│   │   ├── J01_2018.06.13\ 13_43_44.jpg -> /home/professorsfx/Xuelang/train/\350\267\263\350\212\261/J01_2018.06.13\ 13_43_44.jpg
+│       ├── ………………………………
+│   │   └── J01_2018.06.28\ 15_02_16.jpg -> /home/professorsfx/Xuelang/train/\346\223\246\346\264\236/J01_2018.06.28\ 15_02_16.jpg
+│   └── normal
+│       ├── J01_2018.06.13\ 13_24_39.jpg -> /home/professorsfx/Xuelang/train/\346\255\243\345\270\270/J01_2018.06.13\ 13_24_39.jpg
+│       ├── ………………………………
+│       └── J01_2018.06.28\ 15_20_01.jpg -> /home/professorsfx/Xuelang/train/\346\255\243\345\270\270/J01_2018.06.28\ 15_20_01.jpg
+└── val_split.txt
+
+8 directories, 2686 files
 ```
 
 ### 模型介绍
