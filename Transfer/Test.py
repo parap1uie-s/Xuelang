@@ -9,8 +9,8 @@ import argparse
 
 if __name__ == '__main__':
     datapath = "dataset/"
-    width = 448
-    height = 448
+    width = 600
+    height = 600
     
     parser = argparse.ArgumentParser()
 
@@ -61,4 +61,4 @@ if __name__ == '__main__':
     pred_result = pd.DataFrame.from_dict(result,orient='index').reset_index()
     pred_result.columns = ['filename', 'probability']
     
-    pred_result.to_csv("result.csv",index=False)
+    pred_result.to_csv("result-{}.csv".format(args.modelType),index=False)

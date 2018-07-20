@@ -9,6 +9,8 @@ from keras.applications.densenet import DenseNet201
 from keras.applications.xception import Xception
 from keras.applications.inception_v3 import InceptionV3
 from keras.applications.nasnet import NASNetMobile
+import numpy as np
+import cv2
 
 def NASTransfer(input_shape, channel=3, final_activation='softmax'):
     input_tensor = KL.Input((input_shape))
@@ -20,9 +22,9 @@ def NASTransfer(input_shape, channel=3, final_activation='softmax'):
         baseModel = NASNetMobile(include_top=False, weights=None, input_tensor=x, pooling="avg")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
-        sobel_tensor = Gray2SobelEdgeLayer()(gray_tensor) # 224,224,1
-        sobel_tensor = KL.Conv2D(64,(14,14), padding="same", name="sobelCONV")(sobel_tensor)
-        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, sobel_tensor]) # 224,224,4+64
+        gabor_tensor = RGB2GaborLayer()(input_tensor) # 224,224,1
+        gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
+        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         x = ChannelVoteBlock(x)
         baseModel = NASNetMobile(include_top=False, weights=None, input_tensor=x, pooling="avg")
 
@@ -43,9 +45,9 @@ def InceptionTransfer(input_shape, channel=3, final_activation='softmax'):
         baseModel = InceptionV3(include_top=False, weights=None, input_tensor=x, pooling="avg")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
-        sobel_tensor = Gray2SobelEdgeLayer()(gray_tensor) # 224,224,1
-        sobel_tensor = KL.Conv2D(64,(14,14), padding="same", name="sobelCONV")(sobel_tensor)
-        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, sobel_tensor]) # 224,224,4+64
+        gabor_tensor = RGB2GaborLayer()(input_tensor) # 224,224,1
+        gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
+        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         x = ChannelVoteBlock(x)
         baseModel = InceptionV3(include_top=False, weights=None, input_tensor=x, pooling="avg")
 
@@ -66,9 +68,9 @@ def Transfer(input_shape, channel=3, final_activation='softmax'):
         baseModel = InceptionResNetV2(include_top=False, weights=None, input_tensor=x, pooling="avg")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
-        sobel_tensor = Gray2SobelEdgeLayer()(gray_tensor) # 224,224,1
-        sobel_tensor = KL.Conv2D(64,(14,14), padding="same", name="sobelCONV")(sobel_tensor)
-        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, sobel_tensor]) # 224,224,4+64
+        gabor_tensor = RGB2GaborLayer()(input_tensor) # 224,224,1
+        gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
+        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         x = ChannelVoteBlock(x)
         baseModel = InceptionResNetV2(include_top=False, weights=None, input_tensor=x, pooling="avg")
 
@@ -89,9 +91,9 @@ def XceptionTransfer(input_shape, channel=3, final_activation='softmax'):
         baseModel = Xception(include_top=False, weights=None, input_tensor=x, pooling="avg")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
-        sobel_tensor = Gray2SobelEdgeLayer()(gray_tensor) # 224,224,1
-        # sobel_tensor = KL.Conv2D(64,(14,14), padding="same", name="sobelCONV")(sobel_tensor)
-        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, sobel_tensor]) # 224,224,4+64
+        gabor_tensor = RGB2GaborLayer(ksize=[3,5,7,15,17])(input_tensor) # 224,224,1
+        # gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
+        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         # x = ChannelVoteBlock(x)
         baseModel = Xception(include_top=False, weights=None, input_tensor=x, pooling="avg")
 
@@ -113,9 +115,9 @@ def DenseNetTransfer(input_shape, channel=3, final_activation='softmax'):
         baseModel = DenseNet201(include_top=False, weights=None, input_tensor=x, pooling="avg")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
-        sobel_tensor = Gray2SobelEdgeLayer()(gray_tensor) # 224,224,1
-        sobel_tensor = KL.Conv2D(64,(14,14), padding="same", name="sobelCONV")(sobel_tensor)
-        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, sobel_tensor]) # 224,224,4+64
+        gabor_tensor = RGB2GaborLayer()(input_tensor) # 224,224,1
+        gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
+        x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         x = ChannelVoteBlock(x)
         baseModel = DenseNet201(include_top=False, weights=None, input_tensor=x, pooling="avg")
 
@@ -293,22 +295,35 @@ class RGB2GrayLayer(Layer):
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1], input_shape[2], 1)
 
-class Gray2SobelEdgeLayer(Layer):
-    """docstring for Gray2SobelEdgeLayer"""
-    def __init__(self, **kwargs):
-        super(Gray2SobelEdgeLayer, self).__init__(**kwargs)
+class RGB2GaborLayer(Layer):
+    """docstring for RGB2GaborLayer"""
+    def __init__(self, ksize=[7,9,11,13,15,17], lamda=np.pi/8.0, **kwargs):
+        super(RGB2GaborLayer, self).__init__(**kwargs)
+        self.kernels = self.gabor(ksize, lamda)
 
-    def call(self, grayImg):
-        w = tf.image.sobel_edges(grayImg)
-        res = tf.sqrt( tf.pow(w[...,0,0], 2) + tf.pow(w[...,0,1], 2) )
+    def gabor(self, ksize, lamda):
+        kernels = []
+        for theta in np.arange(0, np.pi, np.pi / 4): #gabor方向，0°，45°，90°，135°，共四个
+            for K in range( len(ksize) ): 
+                kern = cv2.getGaborKernel((ksize[K], ksize[K]), 1.0, theta, lamda, 0.5, 0, ktype=cv2.CV_32F)
+                kern /= 1.5*kern.sum()
+                
+                kern = tf.expand_dims(kern, 2)
+                kern = tf.expand_dims(kern, 3)
+                kernels.append(kern)
+        return kernels
 
-        # min_by_batch = tf.expand_dims(tf.expand_dims(tf.reduce_min(tf.reduce_min(res, axis=1),axis=1), axis=-1),axis=-1)
-        # max_by_batch = tf.expand_dims(tf.expand_dims(tf.reduce_max(tf.reduce_max(res, axis=1),axis=1), axis=-1),axis=-1)
+    def call(self, img):
+        convolved = []
+        for kernel in self.kernels:
+            convolved.append( tf.nn.conv2d(img, tf.concat(axis=2, values=[kernel, kernel, kernel]), strides=[1,1,1,1], padding='SAME') )
+        
+        convolved = tf.reduce_sum(tf.concat(convolved, axis=-1), axis=-1, keepdims=True)
+        convolved_max = tf.reduce_max(convolved)
+        convolved_min = tf.reduce_min(convolved)
 
-        # res = (res - min_by_batch) / (max_by_batch - min_by_batch)
-        res = tf.expand_dims(res, -1)
-        res = tf.sigmoid(res)
-        return res
+        convolved = (convolved - convolved_min) / (convolved_max - convolved_min)
+        return convolved
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], input_shape[1], input_shape[2], 1)

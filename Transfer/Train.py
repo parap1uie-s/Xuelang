@@ -29,8 +29,8 @@ if __name__ == '__main__':
     args.channel = int(args.channel)
 
     datapath = "dataset/"
-    width = 448
-    height = 448
+    width = 600
+    height = 600
     
     if args.modelType == "densenet":
         model = DenseNetTransfer((height,width,3), channel=args.channel, final_activation=activation)
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     elif args.modelType == "nas":
         model = NASTransfer((height,width,3), channel=args.channel, final_activation=activation)
 
-    optimizer = Adam(lr=0.001, clipnorm=5.0)
+    optimizer = SGD(lr=0.001, clipnorm=5.0, momentum=0.9, decay=1e-5)
 
     if args.loss == "cc":
         model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=['acc'])
@@ -67,7 +67,8 @@ if __name__ == '__main__':
         height_shift_range=0.2,
         horizontal_flip=True,
         vertical_flip=True,
-        fill_mode="nearest",
+        fill_mode="constant",
+        cval=0.0,
         rescale=1.0/255.0)
 
     val_datagen = ImageDataGenerator(rescale=1.0/255.0)
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     validation_generator = val_datagen.flow_from_directory(
             os.path.join(datapath, "val"),
             target_size=(height, width),
-            batch_size=32,
+            batch_size=8,
             class_mode='categorical',
             shuffle = True)
 
@@ -98,6 +99,7 @@ if __name__ == '__main__':
         use_multiprocessing=True,
         max_queue_size=100,
         workers=4,
+        class_weight= "auto",
         # validation_data=validation_generator,
         # validation_steps=len(validation_generator),
         callbacks=callbacks)

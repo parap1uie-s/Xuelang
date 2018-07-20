@@ -35,7 +35,7 @@ def focal(alpha=0.25, gamma=2.0):
         focal_weight = tf.where(keras.backend.equal(labels, 1), 1 - classification, classification)
         focal_weight = alpha_factor * focal_weight ** gamma
 
-        cls_loss = focal_weight * keras.backend.binary_crossentropy(labels, classification)
+        cls_loss = focal_weight * keras.backend.categorical_crossentropy(labels, classification)
 
         return keras.backend.sum(cls_loss)
 
