@@ -9,8 +9,8 @@ import argparse
 
 if __name__ == '__main__':
     datapath = "dataset/"
-    width = 600
-    height = 600
+    width = 800
+    height = 800
     
     parser = argparse.ArgumentParser()
 
@@ -41,7 +41,10 @@ if __name__ == '__main__':
     class_indices = dict((v,k) for k,v in class_indices.items())
     result = {}
 
-    test_datagen = ImageDataGenerator(rescale=1.0/255.0)
+    test_datagen = ImageDataGenerator(
+        samplewise_center=True,
+        samplewise_std_normalization=True,
+        rescale=1.0/255.0)
     test_generator = test_datagen.flow_from_directory(
             os.path.join(datapath, "test"),
             target_size=(height, width),
@@ -60,5 +63,6 @@ if __name__ == '__main__':
 
     pred_result = pd.DataFrame.from_dict(result,orient='index').reset_index()
     pred_result.columns = ['filename', 'probability']
+    pred_result.loc[ pred_result['probability'] >= 1.0, "probability" ] = 1 - 1e-7
     
     pred_result.to_csv("result-{}.csv".format(args.modelType),index=False)

@@ -59,6 +59,8 @@ if __name__ == '__main__':
         model.load_weights("Transfer-{}.h5".format(args.modelType), by_name=True, skip_mismatch=True)
     
     train_datagen = ImageDataGenerator(
+        samplewise_center=True,
+        samplewise_std_normalization=True,
         shear_range=0.2,
         zoom_range=0.3,
         rotation_range=90,
@@ -67,11 +69,13 @@ if __name__ == '__main__':
         height_shift_range=0.2,
         horizontal_flip=True,
         vertical_flip=True,
-        fill_mode="constant",
-        cval=0.0,
+        fill_mode="nearest",
         rescale=1.0/255.0)
 
-    val_datagen = ImageDataGenerator(rescale=1.0/255.0)
+    val_datagen = ImageDataGenerator(
+        samplewise_center=True,
+        samplewise_std_normalization=True,
+        rescale=1.0/255.0)
 
     train_generator = train_datagen.flow_from_directory(
             os.path.join(datapath, "train"),
