@@ -15,21 +15,21 @@ import cv2
 def NASTransfer(input_shape, channel=3, final_activation='softmax'):
     input_tensor = KL.Input((input_shape))
     if channel == 3:
-        baseModel = NASNetMobile(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="avg")
+        baseModel = NASNetMobile(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="max")
     elif channel == 4:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor]) # 224,224,4
-        baseModel = NASNetMobile(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = NASNetMobile(include_top=False, weights=None, input_tensor=x, pooling="max")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         gabor_tensor = RGB2GaborLayer()(input_tensor) # 224,224,1
         gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         x = ChannelVoteBlock(x)
-        baseModel = NASNetMobile(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = NASNetMobile(include_top=False, weights=None, input_tensor=x, pooling="max")
 
     x = baseModel.output
-    x = KL.Dense(512, activation='relu')(x)
+    x = KL.Dense(1024, activation='relu')(x)
     x = KL.Dropout(0.3)(x)
     x = KL.Dense(2, activation=final_activation, name='output')(x)
     model = Model(input_tensor, outputs=x)
@@ -38,21 +38,21 @@ def NASTransfer(input_shape, channel=3, final_activation='softmax'):
 def InceptionTransfer(input_shape, channel=3, final_activation='softmax'):
     input_tensor = KL.Input((input_shape))
     if channel == 3:
-        baseModel = InceptionV3(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="avg")
+        baseModel = InceptionV3(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="max")
     elif channel == 4:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor]) # 224,224,4
-        baseModel = InceptionV3(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = InceptionV3(include_top=False, weights=None, input_tensor=x, pooling="max")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         gabor_tensor = RGB2GaborLayer()(input_tensor) # 224,224,1
         gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         x = ChannelVoteBlock(x)
-        baseModel = InceptionV3(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = InceptionV3(include_top=False, weights=None, input_tensor=x, pooling="max")
 
     x = baseModel.output
-    x = KL.Dense(512, activation='relu')(x)
+    x = KL.Dense(1024, activation='relu')(x)
     x = KL.Dropout(0.3)(x)
     x = KL.Dense(2, activation=final_activation, name='output')(x)
     model = Model(input_tensor, outputs=x)
@@ -61,21 +61,21 @@ def InceptionTransfer(input_shape, channel=3, final_activation='softmax'):
 def Transfer(input_shape, channel=3, final_activation='softmax'):
     input_tensor = KL.Input((input_shape))
     if channel == 3:
-        baseModel = InceptionResNetV2(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="avg")
+        baseModel = InceptionResNetV2(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="max")
     elif channel == 4:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor]) # 224,224,4
-        baseModel = InceptionResNetV2(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = InceptionResNetV2(include_top=False, weights=None, input_tensor=x, pooling="max")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         gabor_tensor = RGB2GaborLayer()(input_tensor) # 224,224,1
         gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         x = ChannelVoteBlock(x)
-        baseModel = InceptionResNetV2(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = InceptionResNetV2(include_top=False, weights=None, input_tensor=x, pooling="max")
 
     x = baseModel.output
-    x = KL.Dense(512, activation='relu')(x)
+    x = KL.Dense(1024, activation='relu')(x)
     x = KL.Dropout(0.3)(x)
     x = KL.Dense(2, activation=final_activation, name='output')(x)
     model = Model(input_tensor, outputs=x)
@@ -84,18 +84,18 @@ def Transfer(input_shape, channel=3, final_activation='softmax'):
 def XceptionTransfer(input_shape, channel=3, final_activation='softmax'):
     input_tensor = KL.Input((input_shape))
     if channel == 3:
-        baseModel = Xception(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="avg")
+        baseModel = Xception(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="max")
     elif channel == 4:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor]) # 224,224,4
-        baseModel = Xception(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = Xception(include_top=False, weights=None, input_tensor=x, pooling="max")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         gabor_tensor = RGB2GaborLayer(ksize=[3,5,7,15,17])(input_tensor) # 224,224,1
         # gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         # x = ChannelVoteBlock(x)
-        baseModel = Xception(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = Xception(include_top=False, weights=None, input_tensor=x, pooling="max")
 
     x = baseModel.output
     x = KL.Dense(1024, activation='relu')(x)
@@ -108,21 +108,21 @@ def DenseNetTransfer(input_shape, channel=3, final_activation='softmax'):
     assert final_activation in ['softmax', 'linear']
     input_tensor = KL.Input((input_shape))
     if channel == 3:
-        baseModel = DenseNet201(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="avg")
+        baseModel = DenseNet201(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling="max")
     elif channel == 4:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor]) # 224,224,4
-        baseModel = DenseNet201(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = DenseNet201(include_top=False, weights=None, input_tensor=x, pooling="max")
     elif channel == 5:
         gray_tensor = RGB2GrayLayer()(input_tensor) # 224,224,1
         gabor_tensor = RGB2GaborLayer()(input_tensor) # 224,224,1
         gabor_tensor = KL.Conv2D(64,(14,14), padding="same", name="gaborCONV")(gabor_tensor)
         x = KL.Concatenate(axis=-1)([input_tensor, gray_tensor, gabor_tensor]) # 224,224,4+64
         x = ChannelVoteBlock(x)
-        baseModel = DenseNet201(include_top=False, weights=None, input_tensor=x, pooling="avg")
+        baseModel = DenseNet201(include_top=False, weights=None, input_tensor=x, pooling="max")
 
     x = baseModel.output
-    x = KL.Dense(512, activation='relu')(x)
+    x = KL.Dense(1024, activation='relu')(x)
     x = KL.Dropout(0.3)(x)
     x = KL.Dense(2, activation=final_activation, name='output')(x)
     model = Model(input_tensor, outputs=x)
@@ -168,7 +168,7 @@ def ResNet(input_shape,architecture='resnet50', channel=3):
 
     # Final
     x = KL.GlobalAveragePooling2D()(x)
-    x = KL.Dense(512, activation='relu')(x)
+    x = KL.Dense(1024, activation='relu')(x)
     x = KL.Dropout(0.3)(x)
     x = KL.Dense(2, activation=final_activation, name='output')(x)
     model = Model(input_tensor, outputs=x)
