@@ -307,7 +307,7 @@ class RGB2GaborLayer(Layer):
             for K in range( len(ksize) ): 
                 kern = cv2.getGaborKernel((ksize[K], ksize[K]), 1.0, theta, lamda, 0.5, 0, ktype=cv2.CV_32F)
                 kern /= 1.5*kern.sum()
-                
+                kern = tf.constant(kern,dtype=tf.float32)
                 kern = tf.expand_dims(kern, 2)
                 kern = tf.expand_dims(kern, 3)
                 kernels.append(kern)

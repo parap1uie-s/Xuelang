@@ -9,8 +9,8 @@ import argparse
 
 if __name__ == '__main__':
     datapath = "dataset/"
-    width = 800
-    height = 800
+    width = 600
+    height = 600
     
     parser = argparse.ArgumentParser()
 

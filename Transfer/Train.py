@@ -47,6 +47,7 @@ if __name__ == '__main__':
         model = NASTransfer((height,width,3), channel=args.channel, final_activation=activation)
 
     optimizer = SGD(lr=0.001, clipnorm=5.0, momentum=0.9, decay=1e-5)
+    # optimizer = Adam(lr=0.001)
 
     if args.loss == "cc":
         model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=['acc'])
@@ -103,7 +104,8 @@ if __name__ == '__main__':
         use_multiprocessing=True,
         max_queue_size=100,
         workers=4,
-        class_weight= "auto",
+        # class_weight= "auto",
+        class_weight = {0:3, 1:1},
         # validation_data=validation_generator,
         # validation_steps=len(validation_generator),
         callbacks=callbacks)
