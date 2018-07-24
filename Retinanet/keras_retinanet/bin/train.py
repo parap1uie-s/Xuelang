@@ -117,7 +117,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0, freeze_
             'regression'    : losses.smooth_l1(),
             'classification': losses.focal()
         },
-        optimizer=keras.optimizers.adam(lr=1e-4, clipnorm=0.001)
+        optimizer=keras.optimizers.adam(lr=1e-5, clipnorm=0.001)
     )
 
     return model, training_model, prediction_model
@@ -183,14 +183,14 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         callbacks.append(checkpoint)
 
     callbacks.append(keras.callbacks.ReduceLROnPlateau(
-        monitor  = 'mAP',
+        monitor  = 'loss',
         factor   = 0.1,
-        patience = 5,
+        patience = 2,
         verbose  = 1,
-        mode     = 'max',
-        min_delta  = 0.0001,
+        mode     = 'auto',
+        epsilon  = 0.0001,
         cooldown = 0,
-        min_lr   = 1e-7
+        min_lr   = 0
     ))
 
     return callbacks
@@ -213,14 +213,14 @@ def create_generators(args, preprocess_image):
     # create random transform generator for augmenting training data
     if args.random_transform:
         transform_generator = random_transform_generator(
-            min_rotation=-0.5,
-            max_rotation=0.5,
-            min_translation=(-0.3, -0.3),
-            max_translation=(0.3, 0.3),
-            min_shear=-0.4,
-            max_shear=0.4,
-            min_scaling=(0.7, 0.7),
-            max_scaling=(1.3, 1.3),
+            min_rotation=-0.2,
+            max_rotation=0.2,
+            min_translation=(-0.1, -0.1),
+            max_translation=(0.1, 0.1),
+            min_shear=-0.2,
+            max_shear=0.2,
+            min_scaling=(0.9, 0.9),
+            max_scaling=(1.1, 1.1),
             flip_x_chance=0.5,
             flip_y_chance=0.5,
         )
@@ -279,7 +279,7 @@ def create_generators(args, preprocess_image):
             version=args.version,
             labels_filter=args.labels_filter,
             annotation_cache_dir=args.annotation_cache_dir,
-            fixed_labels=args.fixed_labels,
+            parent_label=args.parent_label,
             transform_generator=transform_generator,
             **common_args
         )
@@ -290,7 +290,7 @@ def create_generators(args, preprocess_image):
             version=args.version,
             labels_filter=args.labels_filter,
             annotation_cache_dir=args.annotation_cache_dir,
-            fixed_labels=args.fixed_labels,
+            parent_label=args.parent_label,
             **common_args
         )
     elif args.dataset_type == 'kitti':
@@ -367,7 +367,7 @@ def parse_args(args):
     oid_parser.add_argument('--version',  help='The current dataset version is v4.', default='v4')
     oid_parser.add_argument('--labels-filter',  help='A list of labels to filter.', type=csv_list, default=None)
     oid_parser.add_argument('--annotation-cache-dir', help='Path to store annotation cache.', default='.')
-    oid_parser.add_argument('--fixed-labels', help='Use the exact specified labels.', default=False)
+    oid_parser.add_argument('--parent-label', help='Use the hierarchy children of this label.', default=None)
 
     csv_parser = subparsers.add_parser('csv')
     csv_parser.add_argument('annotations', help='Path to CSV file containing annotations for training.')
@@ -393,8 +393,8 @@ def parse_args(args):
     parser.add_argument('--no-evaluation',   help='Disable per epoch evaluation.', dest='evaluation', action='store_false')
     parser.add_argument('--freeze-backbone', help='Freeze training of backbone layers.', action='store_true')
     parser.add_argument('--random-transform', help='Randomly transform image and annotations.', action='store_true')
-    parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int, default=450)
-    parser.add_argument('--image-max-side', help='Rescale the image if the largest side is larger than max_side.', type=int, default=600)
+    parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int, default=800)
+    parser.add_argument('--image-max-side', help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
 
     return check_args(parser.parse_args(args))
 

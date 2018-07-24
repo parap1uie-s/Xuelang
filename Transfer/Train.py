@@ -60,8 +60,6 @@ if __name__ == '__main__':
         model.load_weights("Transfer-{}.h5".format(args.modelType), by_name=True, skip_mismatch=True)
     
     train_datagen = ImageDataGenerator(
-        samplewise_center=True,
-        samplewise_std_normalization=True,
         shear_range=0.2,
         zoom_range=0.3,
         rotation_range=90,

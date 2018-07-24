@@ -99,9 +99,10 @@ def XceptionTransfer(input_shape, channel=3, final_activation='softmax'):
 
     x = baseModel.output
     x = KL.Dense(1024, activation='relu')(x)
-    # x = KL.Dropout(0.3)(x)
+    x = KL.Dropout(0.3)(x)
     x = KL.Dense(2, activation=final_activation, name='output')(x)
     model = Model(input_tensor, outputs=x)
+
     return model
 
 def DenseNetTransfer(input_shape, channel=3, final_activation='softmax'):

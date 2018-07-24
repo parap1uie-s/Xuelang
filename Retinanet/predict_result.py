@@ -40,7 +40,7 @@ def TestSinglePic(model, image, imgname):
     draw = image.copy()
     draw = cv2.cvtColor(draw, cv2.COLOR_BGR2RGB)
     image = preprocess_image(image)
-    image, scale = resize_image(image, min_side=384, max_side=512)
+    image, scale = resize_image(image, min_side=512, max_side=512)
     boxes, scores, labels = model.predict(np.expand_dims(image, axis=0))
     return scores[0][0]
 
@@ -67,5 +67,5 @@ if __name__ == '__main__':
                 help="evaluate images loadpath")
 
     args = parser.parse_args()
-    model = load_model('model.h5', backbone_name='resnet101')
+    model = load_model('model.h5', backbone_name='resnet50')
     Test(model, args.loadpath)
